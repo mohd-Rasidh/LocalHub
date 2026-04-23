@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LocalHub Prototype</title>
+<link rel="stylesheet" href="/style.css">
+
+</head>
+<body class="dark">
+
+<div id="mouse-glow"></div>
+<div id="root">
+<nav class="nav" id="main-nav">
+  <div class="logo-wrap" onclick="show('landing')">
+    <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
+    <span class="logo-text">LocalHub</span>
+  </div>
+  <div class="nav-links">
+    <div id="nav-indicator" class="nav-indicator"></div>
+    <span class="nav-link active" onclick="show('landing')">Home</span>
+    <span class="nav-link" onclick="show('map')">Map View</span>
+    <span class="nav-link" onclick="show('booking')">My Bookings</span>
+    <span class="nav-link" onclick="show('provider')">Provider</span>
+    <span class="nav-link" onclick="show('profile')">Profile</span>
+  </div>
+  <span id="nav-user" style="font-size:12px;color:var(--text2);display:none"></span>
+  <button class="btn-primary" id="login-btn" onclick="show('auth')" style="font-size:12px;padding:7px 16px">Login</button>
+  <button class="btn-outline hidden" id="logout-btn" onclick="logoutUser()" style="font-size:12px;padding:7px 14px">Logout</button>
+  <button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button>
+</nav>
+<div id="toast-wrap" class="toast-wrap"></div>
+
+<!-- LANDING -->
+<div class="page active" id="pg-landing">
+  <div class="hero">
+    <h1>Find Trusted <span>Local Services</span><br>Instantly</h1>
+    <p>Connect with verified electricians, plumbers, mechanics & cleaners near you in minutes.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="show('dashboard');toast('🎉 Welcome to LocalHub!','success')">Get Started</button>
+      <button class="btn-outline" onclick="show('auth')">Provider Sign Up</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" placeholder="Search for electricians, plumbers..." id="search-inp" oninput="searchHint(this.value)">
+      <button class="btn-primary" style="border-radius:10px" onclick="show('map');toast('🔍 Searching nearby...')">Search</button>
+    </div>
+    <div id="search-suggestions" style="max-width:520px;margin:8px auto 0;display:none">
+      <div class="pcard" style="border-radius:var(--rad2);padding:0;overflow:hidden">
+        <div id="sugg-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Services</div>
+    <div class="cats">
+      <div class="cat" onclick="filterCat('⚡','Electrician')"><span class="cat-icon">⚡</span><span class="cat-label">Electrician</span></div>
+      <div class="cat" onclick="filterCat('🔧','Plumber')"><span class="cat-icon">🔧</span><span class="cat-label">Plumber</span></div>
+      <div class="cat" onclick="filterCat('🚗','Mechanic')"><span class="cat-icon">🚗</span><span class="cat-label">Mechanic</span></div>
+      <div class="cat" onclick="filterCat('🧹','Cleaner')"><span class="cat-icon">🧹</span><span class="cat-label">Cleaner</span></div>
+      <div class="cat" onclick="filterCat('🎨','Painter')"><span class="cat-icon">🎨</span><span class="cat-label">Painter</span></div>
+      <div class="cat" onclick="filterCat('🌿','Gardener')"><span class="cat-icon">🌿</span><span class="cat-label">Gardener</span></div>
+      <div class="cat" onclick="filterCat('❄️','AC Repair')"><span class="cat-icon">❄️</span><span class="cat-label">AC Repair</span></div>
+      <div class="cat" onclick="filterCat('📦','Movers')"><span class="cat-icon">📦</span><span class="cat-label">Movers</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Popular Near You</div>
+    <div class="providers-grid" id="landing-providers"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">What Our Users Say</div>
+    <div class="testimonials">
+      <div class="tcard"><p class="tcard-text">"Found a plumber in 10 minutes. Professional, quick, reasonably priced. Absolutely love this app!"</p><div class="tcard-author"><div class="avatar" style="background:linear-gradient(135deg,#6366F1,#8B5CF6)">PA</div><div><div style="font-weight:600;font-size:12px">Priya Anand</div><div style="font-size:11px;color:var(--text3)">Chennai ★★★★★</div></div></div></div>
+      <div class="tcard"><p class="tcard-text">"The booking is seamless! Tracked my mechanic live. Would recommend to everyone."</p><div class="tcard-author"><div class="avatar" style="background:linear-gradient(135deg,#06B6D4,#0284C7)">RK</div><div><div style="font-weight:600;font-size:12px">Raj Kumar</div><div style="font-size:11px;color:var(--text3)">Bangalore ★★★★★</div></div></div></div>
+      <div class="tcard"><p class="tcard-text">"Cleaners were thorough and on-time. The real-time tracking gave peace of mind."</p><div class="tcard-author"><div class="avatar" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">SM</div><div><div style="font-weight:600;font-size:12px">Swathi M</div><div style="font-size:11px;color:var(--text3)">Hyderabad ★★★★★</div></div></div></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="logo-wrap" style="margin-bottom:16px;transform:none;cursor:default">
+          <div class="logo-icon" style="width:28px;height:28px;border-radius:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
+          <span class="logo-text" style="font-size:18px">LocalHub</span>
+        </div>
+        <p>About Us</p><p>Careers</p><p>Blog</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><p>Electricians</p><p>Plumbers</p><p>Cleaners</p></div>
+      <div class="footer-col"><h4>Support</h4><p>Help Center</p><p>Safety</p><p>Contact</p></div>
+      <div class="footer-col"><h4>Legal</h4><p>Privacy</p><p>Terms</p><p>Cookies</p></div>
+    </div>
+    <p style="text-align:center;margin-top:24px;font-size:12px;color:var(--text3)">© 2025 LocalHub. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- AUTH -->
+<div class="page" id="pg-auth">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-art">
+        <h3>Welcome to the new LocalHub</h3>
+        <p>Book trusted professionals in minutes with cleaner design, faster flow, and a smoother experience on every screen.</p>
+        <div class="auth-art-list">
+          <div>⚡ Verified experts across all categories</div>
+          <div>📍 Live tracking from booking to completion</div>
+          <div>🛡️ Secure login with modern account protection</div>
+        </div>
+      </div>
+      <div class="auth-form">
+        <div id="auth-login">
+          <div class="auth-title">Welcome back 👋</div>
+          <div class="auth-sub">Sign in to continue your bookings</div>
+          <div class="field"><label>Email address</label><input type="email" placeholder="you@example.com" id="a-email"></div>
+          <div class="field"><label>Password</label><input type="password" placeholder="Enter your password" id="a-pass"></div>
+          <button class="btn-primary" style="width:100%;padding:11px" onclick="doLogin()">Sign In</button>
+          <div class="divider">or continue with</div>
+          <button class="google-btn" onclick="doGoogleLogin()">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Continue with Google
+          </button>
+          <div class="auth-toggle">Don't have an account? <span onclick="toggleAuth()">Sign up</span></div>
+        </div>
+        <div id="auth-signup" style="display:none">
+          <div class="auth-title">Create account ✨</div>
+          <div class="auth-sub">Join thousands of happy customers</div>
+          <div class="field"><label>Full Name</label><input type="text" placeholder="Your full name" id="su-name"></div>
+          <div class="field"><label>Email address</label><input type="email" placeholder="you@example.com" id="su-email"></div>
+          <div class="field"><label>Phone</label><input type="tel" placeholder="+91 98765 43210" id="su-phone"></div>
+          <div class="field"><label>Password</label><input type="password" placeholder="Create a strong password" id="su-pass"></div>
+          <button class="btn-primary" style="width:100%;padding:11px" onclick="doSignup()">Create Account</button>
+          <div class="divider">or continue with</div>
+          <button class="google-btn" onclick="doGoogleLogin()">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            Continue with Google
+          </button>
+          <div class="auth-toggle">Already have an account? <span onclick="toggleAuth()">Sign in</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="page" id="pg-dashboard">
+  <div class="dash-body">
+    <div style="margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:20px;font-weight:700;margin-bottom:2px">Good morning! 👋</div>
+        <div style="color:var(--text3);font-size:13px">What service do you need today?</div>
+      </div>
+      <div class="search-bar" style="max-width:300px;flex:1">
+        <input type="text" placeholder="Search services...">
+        <button class="btn-sm">Go</button>
+      </div>
+    </div>
+    <div class="live-grid">
+      <div class="live-card"><div class="live-label">Live Time</div><div class="live-value" id="live-time">--:--:--</div></div>
+      <div class="live-card"><div class="live-label">Users Online</div><div class="live-value" id="online-count">0</div></div>
+      <div class="live-card"><div class="live-label">Last Sync</div><div class="live-value" id="last-sync">just now</div></div>
+    </div>
+    <div class="live-feed">
+      <h4>Real-Time Activity Feed</h4>
+      <ul class="live-feed-list" id="live-feed-list"></ul>
+    </div>
+    <div class="cats" style="margin-bottom:28px" id="dash-cats"></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div class="section-title" style="margin:0">Nearby Providers</div>
+      <div class="filters">
+        <button class="filter-btn active" onclick="setFilter(this,'all')">All</button>
+        <button class="filter-btn" onclick="setFilter(this,'top')">Top Rated</button>
+        <button class="filter-btn" onclick="setFilter(this,'cheap')">Budget</button>
+        <button class="filter-btn" onclick="setFilter(this,'near')">Nearest</button>
+      </div>
+    </div>
+    <div class="providers-grid" id="dash-providers"></div>
+  </div>
+</div>
+
+<!-- MAP VIEW -->
+<div class="page" id="pg-map">
+  <div class="dash-body">
+    <div class="section-title">Map View</div>
+    <div class="rt-meta">
+      <div class="rt-box"><div class="rt-box-label">Last live sync</div><div class="rt-box-value" id="map-sync-time">--:--:--</div></div>
+      <div class="rt-box"><div class="rt-box-label">Active providers nearby</div><div class="rt-box-value" id="map-active-count">0</div></div>
+      <div class="rt-box"><div class="rt-box-label">Avg arrival time</div><div class="rt-box-value" id="map-eta-avg">-- min</div></div>
+    </div>
+    <div class="filters">
+      <button class="filter-btn active">All Services</button>
+      <button class="filter-btn" onclick="setFilter(this)">⚡ Electrician</button>
+      <button class="filter-btn" onclick="setFilter(this)">🔧 Plumber</button>
+      <button class="filter-btn" onclick="setFilter(this)">🚗 Mechanic</button>
+    </div>
+    <div class="map-split">
+      <div class="map-list" id="map-list"></div>
+      <div class="map-canvas" id="map-canvas">
+        <div class="map-bg"></div>
+        <!-- Road grid -->
+        <div class="map-road" style="left:0;right:0;height:2px;top:30%"></div>
+        <div class="map-road" style="left:0;right:0;height:2px;top:60%"></div>
+        <div class="map-road" style="top:0;bottom:0;width:2px;left:30%"></div>
+        <div class="map-road" style="top:0;bottom:0;width:2px;left:65%"></div>
+        <!-- Markers placed by JS -->
+        <div id="map-markers"></div>
+        <!-- User marker -->
+        <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5">
+          <div style="width:20px;height:20px;background:var(--primary);border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 6px rgba(99,102,241,0.2)"></div>
+        </div>
+        <div id="map-popup-el" class="map-popup" style="display:none;top:20px;left:50%;transform:translateX(-50%)"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROVIDER DETAIL -->
+<div class="page" id="pg-detail">
+  <div class="dash-body" style="max-width:800px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;backdrop-filter:blur(12px)">
+      <div class="pdetail-banner" id="detail-banner">🔧</div>
+      <div class="pdetail-profile">
+        <div class="pdetail-avatar" id="detail-avatar">RK</div>
+        <div style="flex:1;padding-bottom:4px">
+          <div style="font-size:20px;font-weight:700" id="detail-name">Ravi Kumar</div>
+          <div style="color:var(--text2);font-size:13px" id="detail-role">Expert Plumber</div>
+          <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap">
+            <span style="color:#F59E0B;font-size:13px">★★★★★ <span style="color:var(--text2)">4.9 (128 reviews)</span></span>
+            <span class="badge">✓ Verified</span>
+            <span class="badge">📍 1.2 km away</span>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="show('booking');confetti()">Book Now</button>
+      </div>
+      <div style="padding:0 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div>
+          <div style="font-weight:600;margin-bottom:12px;font-size:14px">Services Offered</div>
+          <div id="detail-services"></div>
+          <div style="font-weight:600;margin:16px 0 12px;font-size:14px">Reviews</div>
+          <div id="detail-reviews"></div>
+        </div>
+        <div>
+          <div class="book-widget">
+            <div style="font-weight:600;margin-bottom:16px;font-size:14px">📅 Book Appointment</div>
+            <div style="margin-bottom:12px">
+              <label style="font-size:12px;color:var(--text2);font-weight:500;display:block;margin-bottom:6px">Select Date</label>
+              <input type="date" style="width:100%;background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--rad3);padding:8px 12px;color:var(--text);font-size:13px;outline:none" id="book-date">
+            </div>
+            <div style="font-size:12px;color:var(--text2);font-weight:500;margin-bottom:8px">Select Time</div>
+            <div class="time-slots" id="time-slots"></div>
+            <button class="btn-primary" style="width:100%;padding:11px" onclick="handleBookingPayment()">Confirm Booking</button>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING -->
+<div class="page" id="pg-booking">
+  <div class="dash-body" style="max-width:700px">
+    <div class="section-title">My Bookings</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:24px;backdrop-filter:blur(12px);margin-bottom:20px">
+      <div style="font-weight:600;margin-bottom:4px">Ravi Kumar — Plumber</div>
+      <div style="color:var(--text3);font-size:12px;margin-bottom:14px">Booking #LH2025-0482 · Today at 3:00 PM</div>
+      <div class="booking-live">
+        <div class="booking-live-card"><div class="booking-live-label">Live Status</div><div class="booking-live-val" id="bk-status">In Progress</div></div>
+        <div class="booking-live-card"><div class="booking-live-label">ETA</div><div class="booking-live-val" id="bk-eta">18 min</div></div>
+        <div class="booking-live-card"><div class="booking-live-label">Last Update</div><div class="booking-live-val" id="bk-last">just now</div></div>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="booking-live-feed">
+        <h4>Real-Time Booking Updates</h4>
+        <ul id="booking-feed"></ul>
+      </div>
+    </div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--rad);padding:20px;backdrop-filter:blur(12px)">
+      <div style="font-weight:600;margin-bottom:16px;font-size:14px">Past Bookings</div>
+      <table class="req-table">
+        <thead><tr><th>Service</th><th>Provider</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Electrical fix</td><td>Arjun S.</td><td>Apr 15</td><td><span class="status-pill status-done">Completed</span></td></tr>
+          <tr><td>Deep cleaning</td><td>Meena R.</td><td>Apr 10</td><td><span class="status-pill status-done">Completed</span></td></tr>
+          <tr><td>AC Servicing</td><td>Suresh P.</td><td>Apr 2</td><td><span class="status-pill status-done">Completed</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="pg-profile">
+  <div class="dash-body" style="max-width:760px">
+    <div class="section-title">Profile Details</div>
+    <div class="profile-card">
+      <div class="profile-head">
+        <div class="profile-avatar" id="profile-avatar">LH</div>
+        <div>
+          <div style="font-weight:700;font-size:18px" id="profile-display-name">LocalHub User</div>
+          <div style="font-size:12px;color:var(--text3)" id="profile-last-seen">Last updated: just now</div>
+        </div>
+      </div>
+      <div class="profile-grid">
+        <div class="field"><label>Full Name</label><input type="text" id="p-name" placeholder="Your full name"></div>
+        <div class="field"><label>Email</label><input type="email" id="p-email" placeholder="you@example.com"></div>
+        <div class="field"><label>Phone</label><input type="tel" id="p-phone" placeholder="+91 98765 43210"></div>
+        <div class="field"><label>City</label><input type="text" id="p-city" placeholder="Your city"></div>
+        <div class="field full"><label>Bio</label><input type="text" id="p-bio" placeholder="Tell us a little about yourself"></div>
+      </div>
+      <button class="btn-primary" style="margin-top:16px" onclick="saveProfile()">Save Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROVIDER DASHBOARD -->
+<div class="page" id="pg-provider">
+  <div class="dash-layout">
+    <div class="sidebar">
+      <div class="sb-item active" onclick="setSb(this,'dashboard')"><span>📊</span> Dashboard</div>
+      <div class="sb-item" onclick="setSb(this,'services')"><span>🛠</span> Services</div>
+      <div class="sb-item" onclick="setSb(this,'bookings')"><span>📋</span> Bookings</div>
+      <div class="sb-item" onclick="setSb(this,'earnings')"><span>💰</span> Earnings</div>
+      <div class="sb-item" onclick="setSb(this,'reviews')"><span>⭐</span> Reviews</div>
+      <div class="sb-item" onclick="setSb(this,'settings')"><span>⚙️</span> Settings</div>
+    </div>
+    <div class="dash-body" style="max-width:none">
+      <div id="provider-dashboard-view">
+      <div class="provider-top">
+        <div style="font-size:20px;font-weight:700">Provider Dashboard</div>
+        <div class="provider-sync">Last sync: <span id="provider-sync-time">--:--:--</span></div>
+      </div>
+      <div class="provider-livebar">
+        <div class="provider-livebox"><div class="stat-label">New Requests (Live)</div><b id="provider-new-requests">0</b></div>
+        <div class="provider-livebox"><div class="stat-label">Online Now</div><b id="provider-online-now">0</b></div>
+        <div class="provider-livebox"><div class="stat-label">Response Time</div><b id="provider-response-time">-- min</b></div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-label">Total Bookings</div><div class="stat-val" id="provider-total-bookings">247</div></div>
+        <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-val" id="provider-month-bookings">32</div></div>
+        <div class="stat-card"><div class="stat-label">Earnings</div><div class="stat-val" id="provider-earnings">₹48K</div></div>
+        <div class="stat-card"><div class="stat-label">Avg Rating</div><div class="stat-val" id="provider-rating">4.9</div></div>
+      </div>
+      <div class="provider-livefeed">
+        <h4>Live Activity</h4>
+        <ul id="provider-feed"></ul>
+      </div>
+      <div style="font-weight:600;font-size:15px;margin-bottom:14px">Pending Requests</div>
+      <div class="table-wrap" style="background:var(--card);border:1px solid var(--border);border-radius:var(--rad);overflow:hidden;backdrop-filter:blur(12px)">
+        <table class="req-table">
+          <thead><tr><th>Customer</th><th>Service</th><th>Date & Time</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="req-table"></tbody>
+        </table>
+      </div>
+      </div>
+      <div id="provider-other-view" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script type="module" src="/main.js"></script>
+</body>
+</html>
